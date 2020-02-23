@@ -1,11 +1,11 @@
 from PIL import Image
-from opennoise3 import OpenSimplex
+from opensimplex import OpenSimplex
 import math as Math
 import datetime
 import numpy as np
 import noise
 
-shape = (2**9, 2**8)
+shape = (2**11, 2**10)
 channels = 3
 scale = 3
 
@@ -59,9 +59,11 @@ cRGB = [
 	[ 0.95,	(225, 225, 225)],
 	[ 1.00,	(255, 255, 255)]]
 
+weights =   [4.00, 2.00, 1.00, 0.50 ]
+freqs =     [1, 2, 4, 7]
     
 def transform(n):
-    return np.real((n**2.6))
+    return np.real(n**3)
 
 def getScale(n, scheme):
 
@@ -96,7 +98,15 @@ for y in range(0, shape[1]):
         pY = Math.cos(lon)*Math.sin(lat) * scale
         pZ = Math.sin(lon)               * scale
 
-        val = noise3.noise3d(pX, pY, pZ)
+        val = 0
+        weightSum = np.sum(weights)
+        for i in range(0, len(freqs)):
+            freq =      freqs[i]
+            weight =    weights[i]/weightSum
+            
+            val = val + noise3.noise3d(pX/freq, pY/freq, pZ/freq) * weight
+            
+        #print(val)
         #val = transform(val)
 
         SCALE = 0
@@ -120,10 +130,7 @@ for y in range(0, shape[1]):
                 c = int(255 * (3/3))
 
         imMap.putpixel( (x, y), c)
-        #imMap[y, x] = c
-
-
-#imMap = Image.fromarray(imMap, 'RGB')
+        
 
 imMap.save('testImage.png')
 imMap.show()
