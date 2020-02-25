@@ -5,17 +5,17 @@ import datetime
 import numpy as np
 import noise
 
-shape = (2**11, 2**10)
+shape = (2**10, 2**9)
 channels = 3
-scale = 3
+scale = 1.5
 
 now = datetime.datetime.now()
 unix = now.timestamp()
 
 noise3 = OpenSimplex(seed = int(unix))
 
-#imMap = np.zeros( (shape[1], shape[0], shape[2]) )
 imMap = Image.new('RGB', shape)
+mapV =  np.zeros(shape)
 
 cHex = [
     '82B675',
@@ -39,7 +39,7 @@ cHex = [
 
 cRGB = [
 	[-1.00,	(195, 228, 255)],
-	[ 0.00,	(195, 228, 255)],
+	[ 0.0025,(195, 228, 255)],
 	[ 0.10,	(130, 182, 117)],
 	[ 0.20,	(151, 196, 128)],
 	[ 0.25,	(167, 213, 128)],
@@ -59,8 +59,8 @@ cRGB = [
 	[ 0.95,	(225, 225, 225)],
 	[ 1.00,	(255, 255, 255)]]
 
-weights =   [4.00, 2.00, 1.00, 0.50 ]
-freqs =     [1, 2, 4, 7]
+weights =   [8.00, 4.00, 2.00, 1.00, 0.20, 0.20]
+freqs =     [1, 2, 4, 8, 16, 32]
     
 def transform(n):
     return np.real(n**3)
@@ -104,10 +104,10 @@ for y in range(0, shape[1]):
             freq =      freqs[i]
             weight =    weights[i]/weightSum
             
-            val = val + noise3.noise3d(pX/freq, pY/freq, pZ/freq) * weight
-            
-        #print(val)
-        #val = transform(val)
+            val = val + noise3.noise3d(pX*freq, pY*freq, pZ*freq) * weight
+
+        val *= 8/5
+        mapV[x, y] = float(val)
 
         SCALE = 0
         THRESH = 1
@@ -116,7 +116,8 @@ for y in range(0, shape[1]):
         
         c = None
         if mode == SCALE:
-            #c = 255 * transform(val)
+            #c = int(255 * (1+val)/2)
+            #c = int(255 * (1+transform(val))/2)
             c = getScale(transform(val), cRGB)
             
         elif mode == THRESH:
@@ -131,6 +132,7 @@ for y in range(0, shape[1]):
 
         imMap.putpixel( (x, y), c)
         
-
+print(np.max(mapV))
+print(np.min(mapV))
 imMap.save('testImage.png')
 imMap.show()
