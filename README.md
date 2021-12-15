@@ -1,4 +1,4 @@
-# Art-Software
+# Art Software
 A series of files dedicated to making computer generated art.
 
 
